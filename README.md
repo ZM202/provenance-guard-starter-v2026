@@ -165,11 +165,14 @@ These tests verify the combining function's behavior. They do not demonstrate di
 
 | Label | Score range | The exact text a reader sees |
 |---|---|---|
-| high-confidence human |  |  |
-| unsure |  |  |
-| high-confidence AI |  |  |
+| High-confidence human | 0.00–0.35 (inclusive) | This writing appears more consistent with human writing. However, this assessment cannot confirm who wrote it. |
+| Unsure | Above 0.35 and below 0.65 | We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship. |
+| High-confidence AI | 0.65–1.00 (inclusive) | This writing shows patterns associated with AI-generated text. This is not proof that AI was used, and you may request a review if you disagree. |
 
 **Why I worded the "unsure" one this way:**
+
+I wanted to avoid making writers feel accused when the system cannot confidently determine authorship. The message acknowledges uncertainty and explains that no conclusion has been reached. This is especially important because formal human writing can sometimes resemble AI-generated writing.
+
 <!-- It's the hardest of the three. It has to admit uncertainty without
      sounding like an accusation, because the person reading it may well have
      written every word themselves. -->
@@ -237,6 +240,23 @@ $ curl -X POST http://127.0.0.1:5000/submit \
 
 **An appeal**
 
+A writer disagreed with the classification and requested a review of their submission
+
+Request:
+
+{
+  "content_id": "64e67e2c-06e1-415d-9675-965a574d9712",
+  "reasoning": "I wrote this text myself and disagree with the classification. I would like the decision reviewed."
+}
+
+Actual response from POST /appeal (HTTP 200):
+
+{
+  "content_id": "64e67e2c-06e1-415d-9675-965a574d9712",
+  "message": "Your appeal has been received and is now under review.",
+  "status": "under_review"
+}
+
 ```bash
 $ curl -X POST http://127.0.0.1:5000/appeal \
   -H "Content-Type: application/json" \
@@ -248,6 +268,38 @@ $ curl -X POST http://127.0.0.1:5000/appeal \
 ```
 
 **What the log shows afterwards**
+
+A GET request to /log returned HTTP 200 and two entries for the same content ID.
+
+Original decision:
+
+Content ID: 64e67e2c-06e1-415d-9675-965a574d9712
+
+Status: decided
+
+Guess: unsure
+
+Combined score: 0.5687405732848043
+
+Appeal entry:
+
+Content ID: 64e67e2c-06e1-415d-9675-965a574d9712
+
+Event: appeal
+
+Status: under_review
+
+Reasoning: "I wrote this text myself and disagree with the classification. I would like the decision reviewed."
+
+Observation:
+
+The audit log preserves the original decision and adds a separate appeal entry. This provides a record of both the initial classification and the writer's disagreement.
+
+The appeal changes the current review status to under_review through a new log entry. It does not automatically change the original classification or determine whether the writer used AI.
+
+Testing limitation:
+
+The model signal currently uses a temporary fixed score of 0.5 because the GPT-2 dependencies could not be installed due to limited disk space. All three labels were verified using controlled scoring tests, but the AI label cannot currently be produced by the normal /submit endpoint with this placeholder and the disagreement safeguard. These tests validate application behavior, not AI-detection accuracy.
 
 ```bash
 $ curl "http://127.0.0.1:5000/log?limit=3"

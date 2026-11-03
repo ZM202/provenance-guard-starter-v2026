@@ -229,10 +229,18 @@ def submit():
     
     # Temporary fallback: GPT-2 detector cannot run without PyTorch.
     # Replace this with detector.model_signal(text) when available.
+    # model_score = 0.5
+
+    # style_score = stylometry.style_signal(text)
+    # combined_score = scoring.combine_signals(model_score, style_score)
+
+    # content_id = str(uuid.uuid4())
+    
     model_score = 0.5
 
     style_score = stylometry.style_signal(text)
     combined_score = scoring.combine_signals(model_score, style_score)
+    guess, label = scoring.score_to_label(combined_score)
 
     content_id = str(uuid.uuid4())
     
@@ -240,14 +248,14 @@ def submit():
     audit.log_decision(
         content_id=content_id,
         creator_id=creator_id,
-        guess="unknown",
+        guess=guess,
         # model_score=model_score,
         # style_score=0.0,
         # combined_score=None,
         model_score=model_score,
         style_score=style_score,
         combined_score=combined_score,
-        label="pending",
+        label=label,
         status="decided"
     )
     
@@ -255,9 +263,9 @@ def submit():
         "content_id": content_id,
         "creator_id": creator_id,
         "text_length": len(text),
-        "guess": "unknown",
-        "confidence": 0.0,
-        "label": "pending",
+        "guess": guess,
+        "confidence": round(max(combined_score, 1 - combined_score), 2) if guess != "unsure" else 0.0,
+        "label": label,
         # "model_score": model_score,
         # "style_score": 0.0
         "model_score": model_score,
@@ -286,14 +294,55 @@ def appeal():
     to the person on the other end. It's the only thing standing between a
     wrong accusation and nothing at all.
     """
-    payload = request.get_json(silent=True) or {}
+    # payload = request.get_json(silent=True) or {}
 
     # TODO: delete this and build the route.
+    # return jsonify({
+    #     "error": "not_implemented",
+    #     "message": "POST /appeal isn't built yet — see the TODO in app.py.",
+    #     "you_sent": payload,
+    # }), 501
+    
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify({"error": "A JSON object is required."}), 400
+
+    content_id = payload.get("content_id")
+    reasoning = payload.get("reasoning")
+
+    if not isinstance(content_id, str) or not content_id.strip():
+        return jsonify({"error": "A valid content_id is required."}), 400
+
+    if not isinstance(reasoning, str) or not reasoning.strip():
+        return jsonify({"error": "Please provide your reasoning."}), 400
+
+    content_id = content_id.strip()
+    reasoning = reasoning.strip()
+
+    entries = audit.entries_for(content_id)
+
+    decisions = [entry for entry in entries if entry.get("status") == "decided"]
+
+    if not decisions:
+        return jsonify({
+            "error": "content_not_found",
+            "message": "No original submission was found for this content_id."
+        }), 404
+
+    creator_id = decisions[0].get("creator_id", "")
+
+    audit.log_appeal(
+        content_id=content_id,
+        creator_id=creator_id,
+        reasoning=reasoning
+    )
+
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /appeal isn't built yet — see the TODO in app.py.",
-        "you_sent": payload,
-    }), 501
+        "content_id": content_id,
+        "status": "under_review",
+        "message": "Your appeal has been received and is now under review."
+    }), 200
 
 
 # ── Already works ─────────────────────────────────────────────────────────────
