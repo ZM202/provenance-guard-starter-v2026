@@ -39,6 +39,29 @@
 <!-- The path a submission takes, from arriving to the label a reader sees.
      Six or seven steps — this is the trace you wrote in Milestone 1. -->
 
+Provenance Guard is a Flask-based web service that evaluates text and provides an indication of whether its writing patterns appear more consistent with human-written or AI-generated content.
+
+The service is designed to provide transparent results while acknowledging that AI detection is not always reliable.
+
+When a writer submits text through the /submit endpoint, the service:
+
+1- Receives the text and creator ID.
+
+2- Calculates a stylometry score based on sentence-length variation, vocabulary diversity, and punctuation density.
+
+3- Combines the stylometry score with a model signal using scoring.py::combine_signals.
+
+4- Assigns one of three labels: human, unsure, or AI.
+
+5- Returns the scores and a reader-friendly explanation.
+
+6- Records the decision in an append-only audit log.
+
+Writers can challenge a classification using the /appeal endpoint. The service records their reasoning and changes the current review status to under_review without deleting the original decision.
+
+The /log endpoint provides a record of submissions and appeals, supporting transparency and accountability.
+
+Current limitation: The model signal uses a temporary fixed value of 0.5 because limited disk space prevented installation of the GPT-2 dependencies. Therefore, the service demonstrates the scoring, labeling, and appeal workflow but does not provide validated AI-authorship predictions. The AI label is currently reachable in controlled scoring tests, but not through normal submissions using the fixed model score and disagreement safeguard.
 
 
 ---
@@ -313,17 +336,38 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 
 ## How I Used AI
 
+I used AI as a coding assistant to help me understand the assignment requirements, troubleshoot issues, and implement the project incrementally. I reviewed the suggested code and tested the results in VS Code rather than relying only on AI-generated answers.
+
 **Moment 1**
+Combining the detection signals
 
 - *What I asked for:*
+
+I requested guidance on implementing the scoring logic that combines the model signal with the stylometry signal.
+
 - *What came back:*
+AI explained how to calculate a weighted average using the configuration settings and how to handle cases where the two signals strongly disagree.
+
 - *What I changed:*
+I implemented the combining logic in scoring.py::combine_signals, using equal weights of 0.5 for both signals and a safeguard that caps the combined score at 0.50 when the signals differ by at least 0.40. I tested different score combinations to verify the behavior.
 
 **Moment 2**
+ Implementing the appeal process
 
 - *What I asked for:*
+I requested step-by-step guidance on implementing the /appeal endpoint in Flask and connecting it to the existing audit logging functions.
+
 - *What came back:*
+AI recommended checking that the content ID exists, validating the writer's reasoning, calling audit.log_appeal(), and returning a confirmation.
+
 - *What I changed:*
+I added the appeal logic to app.py and tested it using an actual content ID from an earlier submission. I then checked GET /log and confirmed that the original decision remained recorded while a new appeal entry appeared with the status under_review.
+
+Reflection:
+
+AI was helpful for breaking the assignment into manageable steps and explaining how different components connect. However, I still needed to inspect the starter code, run tests, review terminal output, and verify that the implementation behaved as expected.
+
+One important limitation was that I could not install the GPT-2 dependencies because of insufficient disk space. I used a documented temporary model score of 0.5 to test the application workflow, rather than presenting it as a working AI detector.
 
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 
