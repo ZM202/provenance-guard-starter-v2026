@@ -121,6 +121,25 @@
      two off the response, so leaving them out costs you next unit's
      diagnostics. -->
 
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/submit" -Method Post -ContentType "application/json" -Body '{"text":"Testing audit logging","creator_id":"student123"}'
+```
+
+```json
+{
+  "confidence": 0.0,
+  "content_id": "e1db1477-7206-44c1-8259-2b46c8b56728",
+  "creator_id": "student123",
+  "guess": "unknown",
+  "label": "pending",
+  "model_score": 0.5,
+  "style_score": 0.0,
+  "text_length": 21
+}
+```
+
+**Current limitation:** The GPT-2 detector requires PyTorch, which was unavailable. The model score of 0.5 is a temporary placeholder.
+
 ```bash
 $ curl -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \

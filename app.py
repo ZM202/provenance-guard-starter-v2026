@@ -202,14 +202,56 @@ def submit():
     payload = request.get_json(silent=True) or {}
 
     # TODO: delete this and build the route.
+    # return jsonify({
+    #     "error": "not_implemented",
+    #     "message": "POST /submit isn't built yet — see the TODO in app.py.",
+    #     "you_sent": {
+    #         "text_length": len(payload.get("text", "")),
+    #         "creator_id": payload.get("creator_id"),
+    #     },
+    # }), 501
+    
+    # return jsonify({
+    #     "content_id": "test-001",
+    #     "guess": "unknown",
+    #     "confidence": 0.0,
+    #     "label": "pending",
+    #     "model_score": 0.0,
+    #     "style_score": 0.0
+    # }), 200
+    
+    payload = request.get_json(silent=True) or {}
+
+    text = payload.get("text", "")
+    creator_id = payload.get("creator_id", "")
+    
+    # Temporary fallback: GPT-2 detector cannot run without PyTorch.
+    # Replace this with detector.model_signal(text) when available.
+    model_score = 0.5
+    content_id = str(uuid.uuid4())
+    
+    # Record each submission in the audit log.
+    audit.log_decision(
+        content_id=content_id,
+        creator_id=creator_id,
+        guess="unknown",
+        model_score=model_score,
+        style_score=0.0,
+        combined_score=None,
+        label="pending",
+        status="decided"
+    )
+    
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /submit isn't built yet — see the TODO in app.py.",
-        "you_sent": {
-            "text_length": len(payload.get("text", "")),
-            "creator_id": payload.get("creator_id"),
-        },
-    }), 501
+        "content_id": content_id,
+        "creator_id": creator_id,
+        "text_length": len(text),
+        "guess": "unknown",
+        "confidence": 0.0,
+        "label": "pending",
+        "model_score": model_score,
+        "style_score": 0.0
+    }), 200
 
 
 @app.post("/appeal")
