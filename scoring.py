@@ -53,10 +53,20 @@ def combine_signals(model_score: float, style_score: float) -> float:
     write a different rule.
     """
     # TODO: replace this
-    return (
+    # return (
+    #     config.WEIGHT_MODEL_SIGNAL * model_score
+    #     + config.WEIGHT_STYLE_SIGNAL * style_score
+    # )
+    
+    combined = (
         config.WEIGHT_MODEL_SIGNAL * model_score
         + config.WEIGHT_STYLE_SIGNAL * style_score
     )
+
+    if abs(model_score - style_score) >= 0.40:
+        combined = min(combined, 0.50)
+
+    return max(0.0, min(combined, 1.0))
 
 
 def score_to_label(score: float) -> tuple[str, str]:

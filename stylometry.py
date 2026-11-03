@@ -65,7 +65,19 @@ def sentence_length_spread(text: str) -> float:
     before the attack set decides for you.
     """
     # TODO: replace this
-    return 0.0
+    # return 0.0
+    
+    lengths = [len(words(sentence)) for sentence in sentences(text)]
+
+    if len(lengths) < 2:
+        return 0.0
+
+    average = statistics.mean(lengths)
+
+    if average == 0:
+        return 0.0
+
+    return statistics.stdev(lengths) / average
 
 
 def type_token_ratio(text: str) -> float:
@@ -81,8 +93,17 @@ def type_token_ratio(text: str) -> float:
     that alone can look like a signal.
     """
     # TODO: replace this
-    return 0.0
+    # return 0.0
 
+    word_list = words(text)
+
+    if not word_list:
+        return 0.0
+
+    unique_words = len(set(word_list))
+    total_words = len(word_list)
+
+    return unique_words / total_words
 
 def punctuation_density(text: str) -> float:
     """
@@ -95,7 +116,14 @@ def punctuation_density(text: str) -> float:
         writers.
     """
     # TODO: replace this
-    return 0.0
+    # return 0.0
+    
+    if not text.strip():
+        return 0.0
+
+    punctuation = re.findall(r"[.,!?;:—-]", text)
+
+    return len(punctuation) / len(text)
 
 
 # ── Combining them ───────────────────────────────────────────────────────────
@@ -123,7 +151,29 @@ def style_signal(text: str) -> float:
     to signal one, and it is plain writing that gets accused.
     """
     # TODO: replace this
-    return 0.5
+    # return 0.5
+    
+    if not words(text):
+        return 0.5
+
+    spread = sentence_length_spread(text)
+    vocabulary = type_token_ratio(text)
+    punctuation = punctuation_density(text)
+
+    # Normalize all three measures to 0-1.
+    # Higher values mean more AI-like writing patterns.
+    spread_score = 1.0 - min(spread, 1.0)
+    vocabulary_score = 1.0 - vocabulary
+    punctuation_score = 1.0 - min(punctuation / 0.15, 1.0)
+
+    # Initial weights: 40% spread, 40% vocabulary, 20% punctuation.
+    combined = (
+        0.4 * spread_score
+        + 0.4 * vocabulary_score
+        + 0.2 * punctuation_score
+    )
+
+    return max(0.0, min(combined, 1.0))
 
 
 if __name__ == "__main__":

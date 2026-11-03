@@ -54,18 +54,62 @@
 ### Signal one — the model signal
 
 **What it measures:**
+The model signal in detector.py measures how predictable a piece of writing is to a language model.
 
 **Why that might differ between human and AI writing:**
+AI-generated writing may follow patterns that language models find easier to predict. Human writing can contain more unexpected word choices and sentence structures.
 
 **What it can't see:**
+
+Predictability does not prove authorship. Formal, repetitive, or highly structured human writing may also be predictable. AI-generated writing that has been edited may be less predictable.
+
+Current limitation: The GPT-2 detector requires PyTorch, which was unavailable in my environment. For now, the application uses a fixed model score of 0.5. This is a temporary placeholder, not a real model prediction.
 
 ### Signal two — the style signal
 
 **What it measures:**
 
+The style signal in stylometry.py measures three writing characteristics:
+
+Sentence-length spread: how much sentence lengths vary.
+
+Type-token ratio: the proportion of unique words in the text.
+
+Punctuation density: how frequently punctuation appears.
+
+These measurements are combined into a score between 0 and 1, with higher scores representing more AI-like writing patterns under my chosen heuristic.
+
 **Why that might differ between human and AI writing:**
 
+Some AI-generated writing may use consistent sentence lengths and repetitive vocabulary. Human writing may have greater variation in sentence structure and word choice.
+
 **What it can't see:**
+
+The style signal cannot determine who actually wrote the text. Formal human writing may resemble AI-generated writing, while edited AI-generated writing may resemble human writing. Short samples can also produce unreliable measurements.
+
+My illustrative tests produced the following results:
+
+Writing sample
+
+Style score
+
+Repetitive AI-like writing
+
+0.6375
+
+Varied human-like writing
+
+0.2506
+
+Formal writing
+
+0.5842
+
+Lightly edited AI-like writing
+
+0.2832
+
+These results demonstrate potential false-positive and false-negative risks, but the samples do not establish verified authorship or detection accuracy.
 
 ### The combining rule
 
@@ -74,15 +118,40 @@
 
 **The rule:**
 
+I combine the model signal and style signal using an equally weighted average.
+
+If the two signals differ by 0.40 or more, I cap the combined score at 0.50. This conservative disagreement rule prevents one strongly AI-like signal from producing a high AI score when the other signal strongly disagrees.
+
+I chose this approach to reduce the risk of incorrectly accusing a human writer. The tradeoff is that some AI-generated writing may receive a lower score.
+
 **The numbers:**
+
+Model signal weight: 0.50
+
+Style signal weight: 0.50
+
+Disagreement threshold: 0.40
+
+Maximum combined score during disagreement: 0.50
+
+Final combined score range: 0.0 to 1.0
 
 **Where it lives:** `scoring.py::combine_signals`
 
 <!-- ⚠️ The grader checks your code against that line. If your rule lives
      somewhere else, say where. -->
 
+The weights are configured in config.py.
+
 **A case where my two signals split, and what my rule does with it:**
 
+In a simulated disagreement test, the model score was 0.90 and the style score was 0.10.
+
+The weighted average produced 0.50. Because the signals differed by 0.80, the disagreement rule applied and kept the final score at 0.50.
+
+In a second simulated test, the model score was 0.80 and the style score was 0.70. The difference was only 0.10, so the regular weighted average produced 0.75.
+
+These tests verify the combining function's behavior. They do not demonstrate disagreement between two functioning detectors because the actual model signal currently uses a fixed placeholder.
 
 
 ---
@@ -127,16 +196,32 @@ Invoke-RestMethod -Uri "http://127.0.0.1:5000/submit" -Method Post -ContentType 
 
 ```json
 {
+//   "confidence": 0.0,
+//   "content_id": "e1db1477-7206-44c1-8259-2b46c8b56728",
+//   "creator_id": "student123",
+//   "guess": "unknown",
+//   "label": "pending",
+//   "model_score": 0.5,
+//   "style_score": 0.0,
+//   "text_length": 21
+
+  "combined_score": 0.5687405732848043,
   "confidence": 0.0,
-  "content_id": "e1db1477-7206-44c1-8259-2b46c8b56728",
+  "content_id": "dc4a53c3-279c-4656-a0c2-a2e5a8a32a75",
   "creator_id": "student123",
   "guess": "unknown",
   "label": "pending",
   "model_score": 0.5,
-  "style_score": 0.0,
-  "text_length": 21
+  "style_score": 0.6374811465696086,
+  "text_length": 106
+
 }
+
+
 ```
+200
+{'combined_score': 0.5687405732848043, 'confidence': 0.0, 'content_id': 'dc4a53c3-279c-4656-a0c2-a2e5a8a32a75', 'creator_id': 'student123', 'guess': 'unknown', 'label': 'pending', 'model_score': 0.5, 'style_score': 0.6374811465696086, 'text_length': 106}
+
 
 **Current limitation:** The GPT-2 detector requires PyTorch, which was unavailable. The model score of 0.5 is a temporary placeholder.
 
