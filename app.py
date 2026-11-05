@@ -153,7 +153,7 @@ def health():
 # ── YOU BUILD THIS ────────────────────────────────────────────────────────────
 
 @app.post("/submit")
-# @limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
+@limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
 def submit():
     """
     Take a piece of text, decide about it, log the decision, answer.
@@ -222,11 +222,33 @@ def submit():
     #     "style_score": 0.0
     # }), 200
     
-    payload = request.get_json(silent=True) or {}
+    # payload = request.get_json(silent=True) or {}
+
+    # text = payload.get("text", "")
+    # creator_id = payload.get("creator_id", "")
+    
+    
+    payload = request.get_json(silent=True)
+
+    # Reject requests that do not contain a JSON object.
+    if not isinstance(payload, dict):
+        audit.log_rejection(
+            creator_id="unknown",
+            reason="invalid_json"
+        )
+        return jsonify({"error": "A valid JSON object is required."}), 400
 
     text = payload.get("text", "")
     creator_id = payload.get("creator_id", "")
-    
+
+    # Reject missing, empty, or non-text submissions.
+    if not isinstance(text, str) or not text.strip():
+        audit.log_rejection(
+            creator_id=creator_id if isinstance(creator_id, str) else "unknown",
+            reason="invalid_text"
+        )
+        return jsonify({"error": "Text must be a non-empty string."}), 400
+
     # Temporary fallback: GPT-2 detector cannot run without PyTorch.
     # Replace this with detector.model_signal(text) when available.
     # model_score = 0.5

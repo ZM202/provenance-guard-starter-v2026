@@ -375,7 +375,7 @@ One important limitation was that I could not install the GPT-2 dependencies bec
 
 ## Rate Limiting
 
-**My limits:** ___ per minute, ___ per day
+**My limits:** 10 per minute, 200 per day
 
 **Why those numbers and not others:**
 <!-- Think about two people: a real writer submitting their own work a few
@@ -383,17 +383,45 @@ One important limitation was that I could not install the GPT-2 dependencies bec
      thresholds. Your numbers have to be liveable for the first and hostile to
      the second. -->
 
+I chose 10 requests per minute because a legitimate writer may need to submit or revise their writing several times, but typically would not need to submit more than 10 pieces within one minute.
+
+The daily limit of 200 allows regular usage while restricting automated scripts attempting to submit hundreds or thousands of text variations to discover the detector's thresholds.
+
+These limits are intended to balance usability and protection against excessive automated submissions.
+
 **What a caller counts as:** <!-- per address, or per creator_id? They fail
-differently — one script can look like a thousand callers, and one household
-can look like one. -->
+<!-- differently — one script can look like a thousand callers, and one household
+can look like one. --> 
+
+The rate limiter uses creator_id when a valid creator ID is provided. If it is missing, the system falls back to the requester's IP address.
+
+This approach has limitations. A malicious user could change creator IDs to bypass limits, while multiple users sharing an IP address could be affected by the same limit.
 
 **The run of status codes when I pushed past it:**
 
 <!-- python run_attacks.py --flood 15 -->
 
-```
+Command:
 
-```
+python run_attacks.py --flood 15
+
+Actual results:
+
+200 200 200 200 200 200 200 200 200 200 429 429 429 429 429
+
+Of the 15 submissions, 10 were accepted with HTTP 200 and 5 were rejected with HTTP 429.
+
+This demonstrates that rate limiting is enabled and working as configured.
+
+The limiter uses in-memory storage, which is suitable for local testing but does not preserve rate-limit counters across application restarts.
+
+**Audit log verification:**
+
+After running the flood test, I checked the `/log` endpoint and confirmed that all five rate-limited requests were recorded.
+
+Each rejection included the creator ID (`flood_tester`), event (`rejected`), reason (`rate_limited`), limit (`10 per 1 minute`), status (`rejected`), and timestamp.
+
+This confirms that the service not only blocks excessive requests but also preserves a record of the rejections for auditing.
 
 ---
 
