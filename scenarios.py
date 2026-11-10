@@ -23,6 +23,43 @@ A scenario carries **either** of these:
 """
 
 SCENARIOS = [
+    
+        {
+        "name": "score spread AI",
+        "criterion": 2,
+        "texts": [
+            "Artificial intelligence has transformed the way organizations manage information. By automating repetitive tasks, companies can improve operational efficiency while allowing employees to focus on strategic priorities.",
+            "Effective leadership requires clear communication, accountability, and the ability to adapt to changing circumstances. Leaders who encourage collaboration can build stronger teams and improve organizational performance.",
+            "Climate change presents significant challenges for communities around the world. Rising temperatures, shifting weather patterns, and environmental degradation highlight the importance of sustainable development.",
+            "Digital transformation has become an essential component of modern business strategy. Organizations increasingly invest in cloud computing, data analytics, and automation to remain competitive.",
+            "Education plays an important role in preparing individuals for an evolving workforce. Developing critical thinking, communication, and technical skills can help students navigate future career opportunities.",
+            "Customer satisfaction is a key indicator of business success. Organizations that consistently gather feedback and improve service quality are better positioned to establish long-term customer relationships.",
+            "Cybersecurity is a growing concern as businesses rely more heavily on digital infrastructure. Implementing strong security practices can reduce vulnerabilities and protect sensitive information.",
+            "Successful project management depends on clearly defined objectives, realistic timelines, and effective stakeholder communication. Regular progress reviews help teams identify challenges and make necessary adjustments.",
+            "Healthcare technology continues to evolve through advances in data analysis and digital services. These innovations have the potential to improve access to care and support better decision-making.",
+            "Financial planning helps individuals establish realistic goals and make informed decisions about their resources. Consistent budgeting, saving, and monitoring can contribute to long-term financial stability.",
+        ],
+    },
+        
+    
+     {
+        "name": "score spread human",
+        "criterion": 2,
+        "texts": [
+            "someone who listen and able to step in when needed instead of letting staff handles it themselves",
+            "when accountability isn't there and toxic work environment with gossips and backstabbing",
+            "good manager knows to guide the employees whereas bad managers take credits and use the employees for their own benefits",
+            "worklife balance. without it, the stress added up overtime even with high salary, employees can't enjoy the benefit of it",
+            "listen, appreciate and talk to them about their career growth",
+            "skills set that isn't there",
+            "collaboration, give and take",
+            "talk to them and make them aware of it instead of going around talking to others about it.",
+            "communication",
+            "they have their own life, their own career aspiration",
+        ],
+    },
+    
+    
     {
         "name": "my own writing",
         "criterion": 1,
@@ -30,19 +67,44 @@ SCENARIOS = [
         # things you actually wrote. This is the criterion that matters most and
         # it's meaningless with someone else's prose.
         "texts": [
-            "REPLACE ME with a paragraph you wrote yourself.",
-            "REPLACE ME with another one. Ten pieces is the usual number.",
+            "someone who listen and able to step in when needed instead of letting staff handles it themselves",
+            "when accountability isn't there and toxic work environment with gossips and backstabbing",
+            "good manager knows to guide the employees whereas bad managers take credits and use the employees for their own benefits",
+            "worklife balance. without it, the stress added up overtime even with high salary, employees can't enjoy the benefit of it",
+            "listen, appreciate and talk to them about their career growth",
+            "skills set that isn't there",
+            "collaboration, give and take",
+            "talk to them and make them aware of it instead of going around talking to others about it.",
+            "communication",
+            "they have their own life, their own career aspiration",
         ],
     },
     {
         "name": "label coverage",
-        "criterion": 2,
+        "criterion": 3,
         # Inputs spread across your score range, so you can check all three
         # labels are actually reachable.
         "texts": [
-            "REPLACE ME with something you're confident is AI-generated.",
-            "REPLACE ME with something you're confident is human-written.",
-            "REPLACE ME with something genuinely borderline.",
+            # 5 human-written samples
+            "someone who listen and able to step in when needed instead of letting staff handles it themselves",
+            "when accountability isn't there and toxic work environment with gossips and backstabbing",
+            "skills set that isn't there",
+            "collaboration, give and take",
+            "communication",
+
+            # 5 AI-generated samples
+            "Artificial intelligence has transformed the way organizations manage information. By automating repetitive tasks, companies can improve operational efficiency while allowing employees to focus on strategic priorities.",
+            "Effective leadership requires clear communication, accountability, and the ability to adapt to changing circumstances. Leaders who encourage collaboration can build stronger teams and improve organizational performance.",
+            "Climate change presents significant challenges for communities around the world. Rising temperatures, shifting weather patterns, and environmental degradation highlight the importance of sustainable development.",
+            "Digital transformation has become an essential component of modern business strategy. Organizations increasingly invest in cloud computing, data analytics, and automation to remain competitive.",
+            "Education plays an important role in preparing individuals for an evolving workforce. Developing critical thinking, communication, and technical skills can help students navigate future career opportunities.",
+
+            # 5 borderline or ambiguous samples
+            "Good communication matters, but it doesn't always solve every problem.",
+            "Some teams work well together while others struggle even when everyone has experience.",
+            "Technology can help people finish work faster, although it sometimes creates new problems.",
+            "A manager should listen to employees and understand what is happening before making decisions.",
+            "There are different ways to measure success, and not everyone agrees on which one matters most.",
         ],
     },
     # A bad-input criterion looks like this. Uncomment and adjust if that's one
@@ -58,6 +120,20 @@ SCENARIOS = [
     #         {"text": None, "creator_id": "eval_bad_null"},
     #     ],
     # },
+    
+    
+    {
+        "name": "bad input handling",
+        "criterion": 5,
+        "bodies": [
+            {"creator_id": "eval_missing_text"},
+            {"text": "", "creator_id": "eval_empty_text"},
+            {"text": "   ", "creator_id": "eval_whitespace"},
+            {"text": "!!!???...", "creator_id": "eval_punctuation"},
+            {"text": "word " * 2500, "creator_id": "eval_oversized"},
+        ],
+    },
+
 
     # TODO: add what your remaining criteria need.
     #
