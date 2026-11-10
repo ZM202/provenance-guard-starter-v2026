@@ -430,6 +430,30 @@ This confirms that the service not only blocks excessive requests but also prese
 <!-- Every attack with its outcome and a held-or-broke mark.
      `run_attacks.py --label before` produces the table. -->
 
+**Attack run results**
+
+- Attack set: `attack_set/`
+- Command: `python run_attacks.py --set attack_set`
+- Full results: `results/attack_run_2026-11-09_1133.md`
+- Total attacks evaluated: 56
+- HELD: 49
+- BROKE: 7
+- Server crashes or HTTP 5xx errors: 0
+
+| Attack family | HELD | BROKE |
+|---|---:|---:|
+| Evasion | 5 | 5 |
+| False positive | 8 | 0 |
+| Prompt injection | 6 | 0 |
+| Malformed text | 7 | 1 |
+| Malformed HTTP requests | 11 | 1 |
+| Flood / rate limiting | 12 | 0 |
+| **Total** | **49** | **7** |
+
+The application handled all 56 requests without a server crash. The rate limiter returned HTTP 429 for the final two flood requests. However, several evasion attacks reduced the stylometry signal, one oversized text input was accepted without a length restriction, and one malformed creator ID was accepted as an object.
+
+The detector's model score was fixed at 0.5 during this run because the local model was unavailable. Therefore, the results do not establish how the full detector would perform with the actual model enabled. Some BROKE verdicts reflect signal-level weaknesses rather than changes to the final classification.
+
 
 
 **Ten audit log entries from the run**
@@ -439,9 +463,10 @@ This confirms that the service not only blocks excessive requests but also prese
 ```json
 
 ```
-
 **The single worst outcome** — the one I'd least want to explain to a writer
 whose work got caught by it:
+
+The single worst outcome was MF08, the oversized-text attack. The application accepted approximately 60,000 characters without rejecting the input and returned HTTP 200 with an "ai" classification. This is concerning because a writer could receive an AI-generated label even though the input exceeded a reasonable processing limit. The failure occurred at input validation because the service did not enforce a maximum text length before processing. The scoring and decision stages then continued and produced a classification. I would prioritize adding a maximum text-length restriction and returning a clear validation error for oversized submissions. This test does not establish whether the submitted text was actually human-written, but it demonstrates that the service can make a consequential classification without adequate input safeguards.
 
 
 
@@ -464,6 +489,106 @@ that produced it:
 
 ```json
 
+[
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "34264558-a77f-4f71-adec-e6b2ca2c8bf7",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "eb3d652a-7f31-4d79-bd50-9697d01ddb26",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "9ff0a49a-32dc-42fb-b9dc-033309f15042",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "5c344568-c3fe-4d63-8d05-f2695686d56d",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "93125dab-8293-4103-afcd-e5cdecb42ab9",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "81a72b2a-f974-44a5-b6dc-b4a3b96e1581",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "attacker_RQ12",
+        "event":  "rejected",
+        "reason":  "invalid_text",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "unknown",
+        "event":  "rejected",
+        "reason":  "invalid_json",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "attacker_flood",
+        "event":  "rejected",
+        "limit":  "10 per 1 minute",
+        "reason":  "rate_limited",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "attacker_flood",
+        "event":  "rejected",
+        "limit":  "10 per 1 minute",
+        "reason":  "rate_limited",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    }
+]
+
+
 ```
 
 **Diagnoses**
@@ -483,7 +608,31 @@ that produced it:
      Look for a pattern. Five failures on one signal is one problem, not five. -->
 
 
+### Milestone 2 — Attack Failure Diagnoses
 
+**1. Evasion attacks (EV02, EV03, EV05, EV06, EV09) — Signal two: stylometry**
+
+Five evasion attacks reduced the stylometry score compared with the baseline. This indicates that changes to the writing's surface features can influence the detector's assessment. The weakness occurs in `stylometry.py`, where text characteristics are used as a signal of authorship. Because these characteristics can be manipulated, the signal may become less reliable when someone deliberately changes their writing style.
+
+The combining rule averages the model and stylometry scores, allowing a lower stylometry score to reduce the combined score. However, the final classifications remained "unsure," so these were signal-level failures rather than confirmed final-label evasions.
+
+**2. Oversized text (MF08) — Route and input validation**
+
+The application accepted approximately 60,000 characters and returned HTTP 200 instead of rejecting the oversized submission. The route did not enforce a maximum text length before processing. The request then continued through scoring and label mapping, producing an "ai" classification.
+
+This is a validation weakness that could affect reliability and resource usage. A maximum input length should be enforced before running either detection signal.
+
+**3. Malformed creator ID (RQ06) — Route and audit logging**
+
+The application accepted a `creator_id` supplied as a JSON object rather than a string. It returned HTTP 200 and recorded the object in the audit log instead of rejecting or normalizing the invalid identifier.
+
+The failure begins in route validation and carries into audit logging. This could make creator identification and audit records inconsistent. The route should validate that `creator_id` is a string before using it.
+
+**4. Limitation affecting all detector evaluations — Signal one**
+
+The model score was hardcoded to 0.5 because the actual local model was unavailable. This means the first signal did not analyze the submitted text. As a result, the combined score depended on a fixed model value and the stylometry score.
+
+Therefore, the attack results provide useful evidence about input validation, stylometry, audit logging, and rate limiting, but they cannot establish how the complete two-signal detector would perform with the actual model enabled.
 ---
 
 ## The Improvement

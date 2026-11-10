@@ -1,0 +1,98 @@
+﻿[
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "34264558-a77f-4f71-adec-e6b2ca2c8bf7",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "eb3d652a-7f31-4d79-bd50-9697d01ddb26",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "9ff0a49a-32dc-42fb-b9dc-033309f15042",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "5c344568-c3fe-4d63-8d05-f2695686d56d",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "93125dab-8293-4103-afcd-e5cdecb42ab9",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "combined_score":  0.5378787878787878,
+        "content_id":  "81a72b2a-f974-44a5-b6dc-b4a3b96e1581",
+        "creator_id":  "attacker_flood",
+        "guess":  "unsure",
+        "label":  "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+        "model_score":  0.5,
+        "status":  "decided",
+        "style_score":  0.5757575757575758,
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "attacker_RQ12",
+        "event":  "rejected",
+        "reason":  "invalid_text",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "unknown",
+        "event":  "rejected",
+        "reason":  "invalid_json",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "attacker_flood",
+        "event":  "rejected",
+        "limit":  "10 per 1 minute",
+        "reason":  "rate_limited",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "attacker_flood",
+        "event":  "rejected",
+        "limit":  "10 per 1 minute",
+        "reason":  "rate_limited",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    }
+]
