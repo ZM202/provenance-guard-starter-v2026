@@ -42,7 +42,7 @@ for _stream in (sys.stdout, sys.stderr):
 DEFAULT_URL = f"http://{config.HOST}:{config.PORT}"
 
 
-def bodies_for(scenario):
+def bodies_for(scenario, run_id, trial):
     """
     The request bodies one scenario sends.
 
@@ -50,10 +50,23 @@ def bodies_for(scenario):
     sent exactly as written, which is how a bad-input criterion says things a
     string can't — no `text` field, a null, something enormous.
     """
+    
+    """
+    Generate request bodies with unique creator IDs for each evaluation run.
+    """
+    
     if scenario.get("bodies"):
         return list(scenario["bodies"])
+    # return [
+    #     {"text": text, "creator_id": f"eval_{scenario['name'][:12]}_{i}"}
+    #     for i, text in enumerate(scenario["texts"], 1)
+    # ]
+    
     return [
-        {"text": text, "creator_id": f"eval_{scenario['name'][:12]}_{i}"}
+        {
+            "text": text,
+            "creator_id": f"eval_{run_id}_{trial}_{i}"
+        }
         for i, text in enumerate(scenario["texts"], 1)
     ]
 
@@ -106,6 +119,7 @@ def main():
     if args.trials < 3:
         print(f"!! {args.trials} trial(s). The submission asks for three.\n")
 
+    run_id = dt.datetime.now().strftime("%Y%m%d%H%M%S%f")
     rows = []
     for scenario in scenarios.SCENARIOS:
         print(f"\n{scenario['name']}  (criterion {scenario.get('criterion') or '—'})")
@@ -113,18 +127,67 @@ def main():
         trials = []
         for trial in range(1, args.trials + 1):
             results = []
-            for i, body in enumerate(bodies_for(scenario), 1):
+            for i, body in enumerate(bodies_for(scenario, run_id, trial), 1):
                 preview = describe(body)
                 try:
                     response = requests.post(f"{args.url}/submit", json=body,
                                              timeout=args.timeout)
                     payload = response.json() if response.content else {}
+                    
+                                        # Criterion 4: Appeal Path
+                    if scenario.get("criterion") == 4 and response.status_code == 200:
+                        content_id = payload.get("content_id")
+
+                        appeal_response = requests.post(
+                            f"{args.url}/appeal",
+                            json={
+                                "content_id": content_id,
+                                "reasoning": "I wrote this text myself and request a review."
+                            },
+                            timeout=args.timeout
+                        )
+
+                        appeal_payload = appeal_response.json()
+                        
+                        # Verify that the appeal was recorded in the audit log.
+                        log_response = requests.get(
+                            f"{args.url}/log",
+                            timeout=args.timeout
+                        )
+
+                        log_response.raise_for_status()
+                        log_entries = log_response.json().get("entries", [])
+
+                        appeal_logged = any(
+                            entry.get("content_id") == content_id
+                            and entry.get("event") == "appeal"
+                            and entry.get("status") == "under_review"
+                            for entry in log_entries
+                        )
+
+                        results.append({
+                            "status": response.status_code,
+                            "content_id": content_id,
+                            "appeal_status_code": appeal_response.status_code,
+                            "appeal_status": appeal_payload.get("status"),
+                            "appeal_message": appeal_payload.get("message"),
+                            "appeal_logged": appeal_logged,
+                            "passed": (
+                                appeal_response.status_code == 200
+                                and appeal_payload.get("status") == "under_review"
+                                and appeal_logged
+                            ),
+                            "sent": preview,
+                        })
+
+                        continue
                     results.append({
                         "status": response.status_code,
                         "guess": payload.get("guess"),
                         "confidence": payload.get("confidence"),
                         "model_score": payload.get("model_score"),
                         "style_score": payload.get("style_score"),
+                        "combined_score": payload.get("combined_score"),
                         "label": payload.get("label"),
                         "sent": preview,
                     })

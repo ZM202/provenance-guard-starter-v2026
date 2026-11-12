@@ -478,11 +478,27 @@ The single worst outcome was MF08, the oversized-text attack. The application ac
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. False Positive Rate | ≤1/10 high-confidence AI labels on human writing | 0/10 | 0/10 | 0/10 | MET |
+| 2. Score Spread | AI average − human average ≥0.30 | -0.0302 | -0.0302 | -0.0302 | MISSED |
+| 3. Label Coverage | All 3 labels produced | 1/3 | 1/3 | 1/3 | MISSED |
+| 4. Appeal Path | 5/5 appeals recorded successfully | 5/5 | 5/5 | 5/5 | MET |
+| 5. Bad Input Handling | 5/5 invalid requests return HTTP 400 and clear JSON error | 3/5 | 3/5 | 3/5 | MISSED |
+
+
+**Evaluation command:** `python run_eval.py --label before`
+
+**Evaluation evidence:** `results/run_2026-11-12_1422_before.md`
+
+The evaluation was conducted across three trials per criterion. The false-positive criterion passed because none of the ten human-written samples received a high-confidence AI classification. However, all samples were classified as unsure, reflecting the limitations of the temporary fixed model score of 0.5.
+
+The score-spread criterion failed because the AI-generated samples averaged approximately 0.5073, while the human-written samples averaged approximately 0.5374, producing a difference of approximately -0.0302 instead of the required +0.30.
+
+Label coverage failed because the service produced only the unsure classification. The appeal path passed all 15 tests, with successful HTTP responses, under_review statuses, and matching audit entries.
+
+Bad-input handling failed because punctuation-only and oversized submissions were accepted with HTTP 200 rather than rejected with HTTP 400. The clarity of the JSON errors for the other three cases has not yet been independently verified.
+
+These findings represent the baseline before improvements. The unavailable GPT-2 detector limits conclusions about actual AI-authorship detection accuracy.
+
 
 **Real output from one trial**, pasted as text, naming the file and function
 that produced it:

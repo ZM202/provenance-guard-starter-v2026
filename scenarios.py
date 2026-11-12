@@ -134,6 +134,17 @@ SCENARIOS = [
         ],
     },
 
+    {
+        "name": "appeal path",
+        "criterion": 4,
+        "texts": [
+            "This is my original writing about teamwork and collaboration.",
+            "I believe managers should listen carefully to their employees.",
+            "Work-life balance is important for long-term employee well-being.",
+            "Clear communication helps teams avoid unnecessary confusion.",
+            "Employees deserve recognition for the work they contribute.",
+        ],
+    },
 
     # TODO: add what your remaining criteria need.
     #
