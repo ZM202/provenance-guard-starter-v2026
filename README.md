@@ -910,9 +910,55 @@ The score-spread and label-coverage failures share a major limitation: the model
 
 **What I changed:**
 
+I updated `app.py::submit` to reject text submissions exceeding 10,000 characters. Previously, the service accepted oversized text and continued processing it through the detection signals.
+
+The new validation checks the text length before scoring. If the submission exceeds 10,000 characters, the service returns HTTP 400 with a clear JSON error message and records the rejection in the audit log.
+
+I chose 10,000 characters as a reasonable initial limit for this local prototype.
+
 **Which diagnosis pointed at it:**
 
+Milestone 4 identified an input-validation weakness at the route stage. The MF08 attack submitted approximately 60,000 characters and received HTTP 200 instead of being rejected.
+
+Criterion 5 also missed its target, with only 3 out of 5 invalid requests handled correctly across all three trials.
+
 ### Attack Run — After
+
+**Before improvement:**
+- Report: `results/attack_run_2026-11-09_1133.md`
+- Total attacks: 56
+- HELD: 49
+- BROKE: 7
+- MF08: HTTP 200 — oversized text accepted
+
+**After improvement:**
+- Report: `results/attack_run_2026-11-12_1641_after.md`
+- Total attacks executed: 56
+- MF08: HTTP 400 — oversized text rejected
+- Flood protection: Requests 11 and 12 returned HTTP 429
+- Final HELD/BROKE totals require manual review because the attack runner left all 56 verdicts unmarked.
+
+**Evaluation results:**
+
+| Criterion | Before | After |
+|---|---|---|
+| 1. False Positive Rate | 0/10 — MET | 0/10 — MET |
+| 2. Score Spread | -0.0302 — MISSED | Pending confirmation from report |
+| 3. Label Coverage | 1/3 — MISSED | 1/3 — MISSED |
+| 4. Appeal Path | 5/5 — MET | Pending confirmation from report |
+| 5. Bad Input Handling | 3/5 — MISSED | Appears to be 4/5 — pending confirmation |
+
+Evaluation reports:
+- Before: `results/run_2026-11-12_1422_before.md`
+- After: `results/run_2026-11-12_1642_after.md`
+
+**Did it help, and how do I know:**
+
+Yes. The targeted improvement worked. Before the change, the MF08 oversized-text attack returned HTTP 200. After adding the length validation, the same attack returned HTTP 400.
+
+This demonstrates that the service now rejects oversized submissions before scoring them.
+
+However, the improvement does not resolve every validation weakness. Punctuation-only text and malformed creator IDs still require attention. The model signal also remains fixed at 0.5, limiting the system's ability to distinguish AI-generated and human-written text.
 
 <!-- Same format. `run_attacks.py --label after` -->
 
@@ -931,6 +977,16 @@ The score-spread and label-coverage failures share a major limitation: the model
 
 <!-- For each attack still getting through and each criterion still missed:
      what you'd do, and why you stopped. -->
+
+The oversized-text validation improvement worked, but the service still has limitations.
+
+Criterion 5 improved from 3/5 to 4/5 across all three trials. However, punctuation-only submissions are still accepted with HTTP 200 instead of being rejected.
+
+The service also continues to return only the "unsure" label for the evaluation samples. The model signal remains fixed at 0.5, limiting the system's ability to distinguish human-written and AI-generated text.
+
+**The trade I'd make if this ran for real:**
+
+I would prioritize reliable input validation and protecting writers from incorrect AI accusations over forcing a definite classification. Before deploying this service, I would improve the model signal, validate additional malformed inputs, and test against more diverse writing samples. I would retain the appeal process so users can challenge decisions.
 
 
 
