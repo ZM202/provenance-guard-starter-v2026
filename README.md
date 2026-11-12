@@ -460,53 +460,7 @@ The detector's model score was fixed at 0.5 during this run because the local mo
 
 <!-- Choose entries that show the interesting failures, not the ten easiest. -->
 
-```json
-
-```
-**The single worst outcome** — the one I'd least want to explain to a writer
-whose work got caught by it:
-
-The single worst outcome was MF08, the oversized-text attack. The application accepted approximately 60,000 characters without rejecting the input and returned HTTP 200 with an "ai" classification. This is concerning because a writer could receive an AI-generated label even though the input exceeded a reasonable processing limit. The failure occurred at input validation because the service did not enforce a maximum text length before processing. The scoring and decision stages then continued and produced a classification. I would prioritize adding a maximum text-length restriction and returning a clear validation error for oversized submissions. This test does not establish whether the submitted text was actually human-written, but it demonstrates that the service can make a consequential classification without adequate input safeguards.
-
-
-
----
-
-## Run Log and Verdicts
-
-<!-- Your five criteria across three trials. `run_eval.py --label before`. -->
-
-| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
-|---|---|---|---|---|---|
-| 1. False Positive Rate | ≤1/10 high-confidence AI labels on human writing | 0/10 | 0/10 | 0/10 | MET |
-| 2. Score Spread | AI average − human average ≥0.30 | -0.0302 | -0.0302 | -0.0302 | MISSED |
-| 3. Label Coverage | All 3 labels produced | 1/3 | 1/3 | 1/3 | MISSED |
-| 4. Appeal Path | 5/5 appeals recorded successfully | 5/5 | 5/5 | 5/5 | MET |
-| 5. Bad Input Handling | 5/5 invalid requests return HTTP 400 and clear JSON error | 3/5 | 3/5 | 3/5 | MISSED |
-
-
-**Evaluation command:** `python run_eval.py --label before`
-
-**Evaluation evidence:** `results/run_2026-11-12_1422_before.md`
-
-The evaluation was conducted across three trials per criterion. The false-positive criterion passed because none of the ten human-written samples received a high-confidence AI classification. However, all samples were classified as unsure, reflecting the limitations of the temporary fixed model score of 0.5.
-
-The score-spread criterion failed because the AI-generated samples averaged approximately 0.5073, while the human-written samples averaged approximately 0.5374, producing a difference of approximately -0.0302 instead of the required +0.30.
-
-Label coverage failed because the service produced only the unsure classification. The appeal path passed all 15 tests, with successful HTTP responses, under_review statuses, and matching audit entries.
-
-Bad-input handling failed because punctuation-only and oversized submissions were accepted with HTTP 200 rather than rejected with HTTP 400. The clarity of the JSON errors for the other three cases has not yet been independently verified.
-
-These findings represent the baseline before improvements. The unavailable GPT-2 detector limits conclusions about actual AI-authorship detection accuracy.
-
-
-**Real output from one trial**, pasted as text, naming the file and function
-that produced it:
-
-```json
-
-[
-    {
+ {
         "combined_score":  0.5378787878787878,
         "content_id":  "34264558-a77f-4f71-adec-e6b2ca2c8bf7",
         "creator_id":  "attacker_flood",
@@ -572,6 +526,166 @@ that produced it:
         "style_score":  0.5757575757575758,
         "timestamp":  "2026-11-09T16:33:35+00:00"
     },
+
+### Step 2 — Find the JSON already in the same file
+
+```json
+
+[
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.6000000000000001,
+    "combined_score": 0.55,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "someone who listen and able to step in when needed instead of letting "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.6333333333333333,
+    "combined_score": 0.5666666666666667,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "when accountability isn't there and toxic work environment with gossip"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.64,
+    "combined_score": 0.5700000000000001,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "good manager knows to guide the employees whereas bad managers take cr"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.20694214876033057,
+    "combined_score": 0.3534710743801653,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "worklife balance. without it, the stress added up overtime even with h"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.5781420765027323,
+    "combined_score": 0.5390710382513662,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "listen, appreciate and talk to them about their career growth"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.6000000000000001,
+    "combined_score": 0.55,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "skills set that isn't there"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.5523809523809524,
+    "combined_score": 0.5261904761904762,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "collaboration, give and take"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.6740740740740742,
+    "combined_score": 0.587037037037037,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "talk to them and make them aware of it instead of going around talking"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.6000000000000001,
+    "combined_score": 0.55,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "communication"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.6637316561844864,
+    "combined_score": 0.5818658280922432,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "they have their own life, their own career aspiration"
+  }
+]
+```
+
+
+
+
+```
+**The single worst outcome** — the one I'd least want to explain to a writer
+whose work got caught by it:
+
+The single worst outcome was MF08, the oversized-text attack. The application accepted approximately 60,000 characters without rejecting the input and returned HTTP 200 with an "ai" classification. This is concerning because a writer could receive an AI-generated label even though the input exceeded a reasonable processing limit. The failure occurred at input validation because the service did not enforce a maximum text length before processing. The scoring and decision stages then continued and produced a classification. I would prioritize adding a maximum text-length restriction and returning a clear validation error for oversized submissions. This test does not establish whether the submitted text was actually human-written, but it demonstrates that the service can make a consequential classification without adequate input safeguards.
+
+
+
+---
+
+## Run Log and Verdicts
+
+<!-- Your five criteria across three trials. `run_eval.py --label before`. -->
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. False Positive Rate | ≤1/10 high-confidence AI labels on human writing | 0/10 | 0/10 | 0/10 | MET |
+| 2. Score Spread | AI average − human average ≥0.30 | -0.0302 | -0.0302 | -0.0302 | MISSED |
+| 3. Label Coverage | All 3 labels produced | 1/3 | 1/3 | 1/3 | MISSED |
+| 4. Appeal Path | 5/5 appeals recorded successfully | 5/5 | 5/5 | 5/5 | MET |
+| 5. Bad Input Handling | 5/5 invalid requests return HTTP 400 and clear JSON error | 3/5 | 3/5 | 3/5 | MISSED |
+
+
+**Evaluation command:** `python run_eval.py --label before`
+
+**Evaluation evidence:** `results/run_2026-11-12_1422_before.md`
+
+The evaluation was conducted across three trials per criterion. The false-positive criterion passed because none of the ten human-written samples received a high-confidence AI classification. However, all samples were classified as unsure, reflecting the limitations of the temporary fixed model score of 0.5.
+
+The score-spread criterion failed because the AI-generated samples averaged approximately 0.5073, while the human-written samples averaged approximately 0.5374, producing a difference of approximately -0.0302 instead of the required +0.30.
+
+Label coverage failed because the service produced only the unsure classification. The appeal path passed all 15 tests, with successful HTTP responses, under_review statuses, and matching audit entries.
+
+Bad-input handling failed because punctuation-only and oversized submissions were accepted with HTTP 200 rather than rejected with HTTP 400. The clarity of the JSON errors for the other three cases has not yet been independently verified.
+
+These findings represent the baseline before improvements. The unavailable GPT-2 detector limits conclusions about actual AI-authorship detection accuracy.
+
+
+**Real output from one trial**, pasted as text, naming the file and function
+that produced it:
+
+Source: `results/run_2026-11-12_1422_before.md`
+Produced by: `run_eval.py::main`
+
+```json
+
+[
+   
     {
         "creator_id":  "attacker_RQ12",
         "event":  "rejected",
@@ -604,6 +718,111 @@ that produced it:
     }
 ]
 
+###  Criterion 2 - Score Spread (Trial 1)
+
+[
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.40750976644596293,
+    "combined_score": 0.45375488322298146,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Artificial intelligence has transformed the way organizations manage i"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.5629018470680659,
+    "combined_score": 0.531450923534033,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Effective leadership requires clear communication, accountability, and"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.4971093012130417,
+    "combined_score": 0.4985546506065208,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Climate change presents significant challenges for communities around "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.5252256964528486,
+    "combined_score": 0.5126128482264243,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Digital transformation has become an essential component of modern bus"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.546105456596869,
+    "combined_score": 0.5230527282984345,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Education plays an important role in preparing individuals for an evol"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.40683553077024687,
+    "combined_score": 0.45341776538512346,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Customer satisfaction is a key indicator of business success. Organiza"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.539113843453543,
+    "combined_score": 0.5195569217267715,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Cybersecurity is a growing concern as businesses rely more heavily on "
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.5236529172018102,
+    "combined_score": 0.5118264586009051,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Successful project management depends on clearly defined objectives, r"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.5820428778097484,
+    "combined_score": 0.5410214389048742,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Healthcare technology continues to evolve through advances in data ana"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.0,
+    "model_score": 0.5,
+    "style_score": 0.5550488481489562,
+    "combined_score": 0.5275244240744781,
+    "label": "We cannot reliably determine whether this writing was created by a person or AI. No conclusion has been made about its authorship.",
+    "sent": "Financial planning helps individuals establish realistic goals and mak"
+  }
+]
+
 
 ```
 
@@ -625,6 +844,7 @@ that produced it:
 
 
 ### Milestone 2 — Attack Failure Diagnoses
+
 
 **1. Evasion attacks (EV02, EV03, EV05, EV06, EV09) — Signal two: stylometry**
 
@@ -650,6 +870,41 @@ The model score was hardcoded to 0.5 because the actual local model was unavaila
 
 Therefore, the attack results provide useful evidence about input validation, stylometry, audit logging, and rate limiting, but they cannot establish how the complete two-signal detector would perform with the actual model enabled.
 ---
+
+### Milestone 4 — Evaluation Criterion Diagnoses
+
+**Criterion 1 — False Positive Rate: MET**
+
+All three trials produced 0/10 high-confidence AI classifications for human-written samples, meeting the target of no more than 1/10 in every trial. However, all samples were classified as unsure, so this result does not demonstrate that the service can reliably recognize human authorship.
+
+**Criterion 2 — Score Spread: MISSED**
+
+- **Target:** AI average minus human average must be at least 0.30.
+- **Results:** -0.0302, -0.0302, -0.0302.
+- **Stage:** Signal one and combining rule.
+- **Mechanism:** The model signal was fixed at 0.5 because the actual detector was unavailable. The combining rule averaged this placeholder with the stylometry score, leaving the system dependent on surface-level writing characteristics. The AI samples averaged approximately 0.5073, while the human samples averaged 0.5374. The scores were separated in the opposite direction from the target.
+
+**Criterion 3 — Label Coverage: MISSED**
+
+- **Target:** All three labels must be produced.
+- **Results:** 1/3, 1/3, 1/3.
+- **Stage:** Signal one, combining rule, and label mapping.
+- **Mechanism:** The fixed model score of 0.5 and the combining rule kept the evaluated scores within the unsure classification range. The label mapping itself defines three possible outcomes, but the normal submission workflow did not reach all three during evaluation.
+
+**Criterion 4 — Appeal Path: MET**
+
+All three trials successfully recorded 5/5 appeals, meeting the target in every trial. The service returned successful responses, changed the review status to under_review, and preserved corresponding audit entries.
+
+**Criterion 5 — Bad Input Handling: MISSED**
+
+- **Target:** All five invalid requests must return HTTP 400 with a clear JSON error.
+- **Results:** 3/5, 3/5, 3/5.
+- **Stage:** Route and input validation.
+- **Mechanism:** The submission route did not reject punctuation-only text or oversized text. Both were accepted with HTTP 200 instead of HTTP 400. This indicates that input validation was incomplete before the scoring process. The clarity of the error messages for the other three cases was not independently verified.
+
+**Pattern across the misses**
+
+The score-spread and label-coverage failures share a major limitation: the model signal is a fixed placeholder rather than an actual prediction. The bad-input failure is separate and originates in route validation. These findings suggest prioritizing input validation as an improvement that can be implemented and tested without installing the unavailable model dependencies.
 
 ## The Improvement
 
