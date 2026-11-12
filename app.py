@@ -248,6 +248,16 @@ def submit():
             reason="invalid_text"
         )
         return jsonify({"error": "Text must be a non-empty string."}), 400
+    
+    # Reject oversized text before running the detection signals.
+    if len(text) > 10000:
+        audit.log_rejection(
+            creator_id=creator_id if isinstance(creator_id, str) else "unknown",
+            reason="text_too_long"
+        )
+        return jsonify({
+            "error": "Text exceeds the maximum allowed length of 10000 characters."
+        }), 400
 
     # Temporary fallback: GPT-2 detector cannot run without PyTorch.
     # Replace this with detector.model_signal(text) when available.
