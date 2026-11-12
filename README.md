@@ -336,7 +336,18 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 
 ## How I Used AI
 
+What I asked for:
+
 I used AI as a coding assistant to help me understand the assignment requirements, troubleshoot issues, and implement the project incrementally. I reviewed the suggested code and tested the results in VS Code rather than relying only on AI-generated answers.
+
+What came back:
+
+AI helped explain the attack results, identify weaknesses in the submission route, and suggest a max text-length validation check.
+
+What I changed:
+
+I added a 10,000 character limit to app.py:: submit, reran the full attack set and evaluation tests, and compared the results. I verified that oversized submissions now return HTTP 400 instead of HTTP 200. Bad-input handling improved from 3/5 to 4/5, although other limiations remain. 
+
 
 **Moment 1**
 Combining the detection signals
@@ -526,6 +537,40 @@ The detector's model score was fixed at 0.5 during this run because the local mo
         "style_score":  0.5757575757575758,
         "timestamp":  "2026-11-09T16:33:35+00:00"
     },
+
+    
+    {
+        "creator_id":  "attacker_RQ12",
+        "event":  "rejected",
+        "reason":  "invalid_text",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "unknown",
+        "event":  "rejected",
+        "reason":  "invalid_json",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "attacker_flood",
+        "event":  "rejected",
+        "limit":  "10 per 1 minute",
+        "reason":  "rate_limited",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    },
+    {
+        "creator_id":  "attacker_flood",
+        "event":  "rejected",
+        "limit":  "10 per 1 minute",
+        "reason":  "rate_limited",
+        "status":  "rejected",
+        "timestamp":  "2026-11-09T16:33:35+00:00"
+    }
+
+    
 
 ### Step 2 — Find the JSON already in the same file
 
@@ -943,10 +988,10 @@ Criterion 5 also missed its target, with only 3 out of 5 invalid requests handle
 | Criterion | Before | After |
 |---|---|---|
 | 1. False Positive Rate | 0/10 — MET | 0/10 — MET |
-| 2. Score Spread | -0.0302 — MISSED | Pending confirmation from report |
+| 2. Score Spread | -0.0302 — MISSED | -0.0302 - MISSED |
 | 3. Label Coverage | 1/3 — MISSED | 1/3 — MISSED |
-| 4. Appeal Path | 5/5 — MET | Pending confirmation from report |
-| 5. Bad Input Handling | 3/5 — MISSED | Appears to be 4/5 — pending confirmation |
+| 4. Appeal Path | 5/5 — MET | 5/5 - MET |
+| 5. Bad Input Handling | 3/5 — MISSED | 4/5 — MISSED |
 
 Evaluation reports:
 - Before: `results/run_2026-11-12_1422_before.md`
@@ -962,38 +1007,26 @@ However, the improvement does not resolve every validation weakness. Punctuation
 
 <!-- Same format. `run_attacks.py --label after` -->
 
-
-
-**Did it help, and how do I know:**
-
-<!-- Widening the unsure band usually fixes one problem and creates another.
-     Reporting that trade honestly is worth full credit. -->
-
-
-
 ---
 
 ## What's Still Broken
 
-<!-- For each attack still getting through and each criterion still missed:
-     what you'd do, and why you stopped. -->
+The improvement successfully addressed the oversized-text vulnerability, but several issues remain.
 
-The oversized-text validation improvement worked, but the service still has limitations.
+**1. Evasion attacks (EV02, EV03, EV05, EV06,EV09):** Five evasion attacks previously broke the signal-level expectations. The service still returns "unsure" for these submissions. I would improve the model signal and test more diverse writing patterns. I stopped because implementing and validating a stronger model was beyond the scope of this unit.
 
-Criterion 5 improved from 3/5 to 4/5 across all three trials. However, punctuation-only submissions are still accepted with HTTP 200 instead of being rejected.
+**2. Malformed HTTP request (RQ06):** The service still accepts a `creator_id` object instead of requiring a string. I would add type validation for `creator_id` and return HTTP 400 for invalid values. I stopped because I prioritized the oversized-text vulnerability as my single improvement.
 
-The service also continues to return only the "unsure" label for the evaluation samples. The model signal remains fixed at 0.5, limiting the system's ability to distinguish human-written and AI-generated text.
+**3. Bad Input Handling (Criterion 5):** The result improved from 3/5 to 4/5, but punctuation-only text (`!!!???...`) still returns HTTP 200. I would add validation to require meaningful text content. I stopped because this would be a second code improvement.
 
-**The trade I'd make if this ran for real:**
+**4. Score Spread (Criterion 2):** The system still fails to separate AI-generated and human-written text by the required margin of 0.30. I would replace the placeholder model score of 0.5 with a functioning model and recalibrate the scoring system. I stopped because of local hardware and storage limitations.
 
-I would prioritize reliable input validation and protecting writers from incorrect AI accusations over forcing a definite classification. Before deploying this service, I would improve the model signal, validate additional malformed inputs, and test against more diverse writing samples. I would retain the appeal process so users can challenge decisions.
-
-
+**5. Label Coverage (Criterion 3):** The service continues to return only "unsure" instead of all three expected labels. I would improve the model signal and test the classification thresholds. I stopped because reliable classification requires more validation than this unit allows.
 
 **The trade I'd make if this ran for real:**
 
-<!-- Two sentences. Fewer wrong accusations means more AI text getting through.
-     Say which way you'd go and WHO PAYS FOR IT. -->
+I would prioritize fewer false accusations against human writers, even if that means more AI-generated text passes through without being identified. The trade-off is that people relying on the detector would receive fewer definitive AI detections, but legitimate writers would face less risk of being incorrectly accused.
+
 
 
 
