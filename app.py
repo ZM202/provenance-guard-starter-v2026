@@ -25,6 +25,7 @@ Routes:
 """
 
 import uuid
+from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request
 
@@ -379,7 +380,76 @@ def appeal():
 
 # ── Already works ─────────────────────────────────────────────────────────────
 
-@app.get("/appeals/pending")
+
+@app.post("/appeals/<content_id>/review")
+def review_appeal(content_id):
+    """Allow a human reviewer to resolve an appeal."""
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify({
+            "error": "A JSON object is required."
+        }), 400
+        
+    decision = payload.get("decision")
+
+    if decision not in ("upheld", "overturned"):
+        return jsonify({
+            "error": "Decision must be 'upheld' or 'overturned'."
+        }), 400
+        
+    reviewer_id = payload.get("reviewer_id")
+
+    if not isinstance(reviewer_id, str) or not reviewer_id.strip():
+        return jsonify({
+            "error": "A valid reviewer_id is required."
+        }), 400
+
+    reviewer_id = reviewer_id.strip()
+    
+    entries = audit.entries_for(content_id)
+
+    appeals = [
+        entry for entry in entries
+        if entry.get("event") == "appeal"
+    ]
+
+    if not appeals:
+        return jsonify({
+            "error": "appeal_not_found",
+            "message": "No appeal was found for this content_id."
+        }), 404
+        
+    already_resolved = any(
+        entry.get("event") == "appeal_resolution"
+        for entry in entries
+    )
+
+    if already_resolved:
+        return jsonify({
+            "error": "appeal_already_resolved",
+            "message": "This appeal has already been reviewed."
+        }), 409
+        
+    appeal_timestamp = appeals[0]["timestamp"]
+    submitted_at = datetime.fromisoformat(appeal_timestamp)
+    reviewed_at = datetime.now(timezone.utc)
+
+    resolution_seconds = max(
+        0.0,
+        (reviewed_at - submitted_at).total_seconds()
+    )
+    
+    review_record = audit.log_review(
+        content_id=content_id,
+        reviewer_id=reviewer_id,
+        decision=decision,
+        resolution_seconds=resolution_seconds
+    )
+
+    return jsonify(review_record), 200
+       
+@app.get("/appeals/pending") 
 def get_pending_appeals():
     """Retrieve appeals awaiting human review."""
     entries = audit.read_entries()
