@@ -1,0 +1,92 @@
+[
+  {
+    "criterion": 1,
+    "trial": 1,
+    "verdict": "MET",
+    "evidence": "Pending HTTP 200"
+  },
+  {
+    "criterion": 1,
+    "trial": 2,
+    "verdict": "MET",
+    "evidence": "Pending HTTP 200"
+  },
+  {
+    "criterion": 1,
+    "trial": 3,
+    "verdict": "MET",
+    "evidence": "Pending HTTP 200"
+  },
+  {
+    "criterion": 2,
+    "trial": 1,
+    "verdict": "MET",
+    "evidence": "Review HTTP 200"
+  },
+  {
+    "criterion": 2,
+    "trial": 2,
+    "verdict": "MET",
+    "evidence": "Review HTTP 200"
+  },
+  {
+    "criterion": 2,
+    "trial": 3,
+    "verdict": "MET",
+    "evidence": "Review HTTP 200"
+  },
+  {
+    "criterion": 3,
+    "trial": 1,
+    "verdict": "MET",
+    "evidence": "Review HTTP 200; records 1"
+  },
+  {
+    "criterion": 3,
+    "trial": 2,
+    "verdict": "MET",
+    "evidence": "Review HTTP 200; records 1"
+  },
+  {
+    "criterion": 3,
+    "trial": 3,
+    "verdict": "MET",
+    "evidence": "Review HTTP 200; records 1"
+  },
+  {
+    "criterion": 4,
+    "trial": 1,
+    "verdict": "MET",
+    "evidence": "Invalid review HTTP 400"
+  },
+  {
+    "criterion": 4,
+    "trial": 2,
+    "verdict": "MET",
+    "evidence": "Invalid review HTTP 400"
+  },
+  {
+    "criterion": 4,
+    "trial": 3,
+    "verdict": "MET",
+    "evidence": "Invalid review HTTP 400"
+  },
+  {
+    "criterion": 5,
+    "trial": 1,
+    "verdict": "MET",
+    "evidence": "First HTTP 200; second HTTP 409"
+  },
+  {
+    "criterion": 5,
+    "trial": 2,
+    "verdict": "MET",
+    "evidence": "First HTTP 200; second HTTP 409"
+  },
+  {
+    "criterion": 5,
+    "trial": 3,
+    "verdict": "MET",
+    "evidence": "First HTTP 200; second HTTP 409"
+  }
+]

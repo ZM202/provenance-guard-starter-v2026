@@ -34,9 +34,10 @@ import audit
 import config
 import scoring
 import stylometry
+import threading
 
 app = Flask(__name__)
-
+appeal_review_lock = threading.Lock()
 
 # ── Rate limiting — UNIT 8 ────────────────────────────────────────────────────
 # Off until you turn it on. In unit 8, Milestone 1:
@@ -359,8 +360,13 @@ def appeal():
 
     content_id = content_id.strip()
     reasoning = reasoning.strip()
-
+    
     entries = audit.entries_for(content_id)
+
+    appeals = [
+        entry for entry in entries
+        if entry.get("event") == "appeal"
+    ]
 
     decisions = [entry for entry in entries if entry.get("status") == "decided"]
 
@@ -414,48 +420,50 @@ def review_appeal(content_id):
 
     reviewer_id = reviewer_id.strip()
     
-    entries = audit.entries_for(content_id)
-
-    appeals = [
-        entry for entry in entries
-        if entry.get("event") == "appeal"
-    ]
-
-    if not appeals:
-        return jsonify({
-            "error": "appeal_not_found",
-            "message": "No appeal was found for this content_id."
-        }), 404
-        
-    already_resolved = any(
-        entry.get("event") == "appeal_resolution"
-        for entry in entries
-    )
-
-    if already_resolved:
-        return jsonify({
-            "error": "appeal_already_resolved",
-            "message": "This appeal has already been reviewed."
-        }), 409
-        
-    appeal_timestamp = appeals[0]["timestamp"]
-    submitted_at = datetime.fromisoformat(appeal_timestamp)
-    reviewed_at = datetime.now(timezone.utc)
-
-    resolution_seconds = max(
-        0.0,
-        (reviewed_at - submitted_at).total_seconds()
-    )
     
-    review_record = audit.log_review(
-        content_id=content_id,
-        reviewer_id=reviewer_id,
-        decision=decision,
-        resolution_seconds=resolution_seconds
-    )
+    with appeal_review_lock:
+        entries = audit.entries_for(content_id)
 
-    return jsonify(review_record), 200
-       
+        appeals = [
+            entry for entry in entries
+            if entry.get("event") == "appeal"
+        ]
+
+        if not appeals:
+            return jsonify({
+                "error": "appeal_not_found",
+                "message": "No appeal was found for this content_id."
+            }), 404
+
+        already_resolved = any(
+            entry.get("event") == "appeal_resolution"
+            for entry in entries
+        )
+
+        if already_resolved:
+            return jsonify({
+                "error": "appeal_already_resolved",
+                "message": "This appeal has already been reviewed."
+            }), 409
+
+        appeal_timestamp = appeals[0]["timestamp"]
+        submitted_at = datetime.fromisoformat(appeal_timestamp)
+        reviewed_at = datetime.now(timezone.utc)
+
+        resolution_seconds = max(
+            0.0,
+            (reviewed_at - submitted_at).total_seconds()
+        )
+
+        review_record = audit.log_review(
+            content_id=content_id,
+            reviewer_id=reviewer_id,
+            decision=decision,
+            resolution_seconds=resolution_seconds
+        )
+
+        return jsonify(review_record), 200
+
 @app.get("/appeals/pending") 
 def get_pending_appeals():
     """Retrieve appeals awaiting human review."""

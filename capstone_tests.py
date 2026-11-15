@@ -167,7 +167,7 @@ def main():
         finally:
             config.AUDIT_LOG = original_log
 
-    output = Path("capstone_before_results.json")
+    output = Path("capstone_after_results.json")
     output.write_text(json.dumps(results, indent=2), encoding="utf-8")
 
     met = sum(result["verdict"] == "MET" for result in results)
