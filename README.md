@@ -1066,3 +1066,27 @@ I would prioritize fewer false accusations against human writers, even if that m
 ---
 
 📖 **How to run this project: [RUNNING.md](RUNNING.md)**
+
+
+
+##Capstone
+**What This Extends**
+
+For my capstone project, I am extending Provenance Guard, the text-classification service I developed in Units 7 and 8. The existing system evaluates submitted text, records classification decisions, and allows writers to submit appeals through the `/appeal` endpoint.
+
+Currently, appeals are recorded with an `under_review` status, but there is no mechanism for a human reviewer to resolve them. My capstone extension will add a basic human review workflow that allows pending appeals to be retrieved, review decisions to be recorded, and appeal resolution time to be measured.
+
+
+**The Shape**
+
+I selected **Shape C — Extend One Capability** for my Provenance Guard capstone project.
+
+My extension focuses on improving the existing appeal process by adding a basic human review workflow. A reviewer will be able to retrieve pending appeals, record a decision to uphold or overturn the original classification, and measure how long each appeal takes to resolve.
+
+To keep the project manageable, I decided the following are out of scope:
+
+- Building a graphical dashboard or frontend interface.
+- Adding a third AI-detection signal or retraining the existing model.
+- Automatically deciding appeals without human involvement.
+
+The goal is to create a small, testable extension while preserving the existing text-classification and audit-logging functionality.
