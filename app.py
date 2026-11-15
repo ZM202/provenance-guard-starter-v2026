@@ -25,6 +25,7 @@ Routes:
 """
 
 import uuid
+import time
 from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request
@@ -156,6 +157,7 @@ def health():
 @app.post("/submit")
 @limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
 def submit():
+    start_time = time.perf_counter()
     """
     Take a piece of text, decide about it, log the decision, answer.
     ← TODO — Milestones 3, 4 and 5
@@ -235,7 +237,8 @@ def submit():
     if not isinstance(payload, dict):
         audit.log_rejection(
             creator_id="unknown",
-            reason="invalid_json"
+            reason="invalid_json",
+            duration_seconds=time.perf_counter() - start_time
         )
         return jsonify({"error": "A valid JSON object is required."}), 400
 
@@ -246,7 +249,8 @@ def submit():
     if not isinstance(text, str) or not text.strip():
         audit.log_rejection(
             creator_id=creator_id if isinstance(creator_id, str) else "unknown",
-            reason="invalid_text"
+            reason="invalid_text",
+            duration_seconds=time.perf_counter() - start_time
         )
         return jsonify({"error": "Text must be a non-empty string."}), 400
     
@@ -254,7 +258,8 @@ def submit():
     if len(text) > 10000:
         audit.log_rejection(
             creator_id=creator_id if isinstance(creator_id, str) else "unknown",
-            reason="text_too_long"
+            reason="text_too_long",
+            duration_seconds=time.perf_counter() - start_time
         )
         return jsonify({
             "error": "Text exceeds the maximum allowed length of 10000 characters."
@@ -276,6 +281,7 @@ def submit():
     guess, label = scoring.score_to_label(combined_score)
 
     content_id = str(uuid.uuid4())
+    duration_seconds = time.perf_counter() - start_time
     
     # Record each submission in the audit log.
     audit.log_decision(
@@ -289,7 +295,8 @@ def submit():
         style_score=style_score,
         combined_score=combined_score,
         label=label,
-        status="decided"
+        status="decided",
+        duration_seconds=duration_seconds
     )
     
     return jsonify({
