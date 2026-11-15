@@ -90,6 +90,22 @@ def log_appeal(content_id: str, creator_id: str, reasoning: str) -> dict:
         "status": "under_review",
         "reasoning": reasoning,
     })
+    
+def log_review(
+    content_id: str,
+    reviewer_id: str,
+    decision: str,
+    resolution_seconds: float
+) -> dict:
+    """Record a human review decision without overwriting earlier events."""
+    return _append({
+        "timestamp": _now(),
+        "content_id": content_id,
+        "event": "appeal_resolution",
+        "status": decision,
+        "reviewer_id": reviewer_id,
+        "resolution_seconds": resolution_seconds,
+    })
 
 
 def log_rejection(creator_id: str, reason: str, **extra) -> dict:
