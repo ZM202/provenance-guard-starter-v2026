@@ -379,7 +379,32 @@ def appeal():
 
 # ── Already works ─────────────────────────────────────────────────────────────
 
+@app.get("/appeals/pending")
+def get_pending_appeals():
+    """Retrieve appeals awaiting human review."""
+    entries = audit.read_entries()
+    pending = []
+    
+    resolved_ids = {
+        entry["content_id"]
+        for entry in entries
+        if entry.get("event") == "appeal_resolution"
+    }
+    
+    for entry in entries:
+        if (
+            entry.get("event") == "appeal"
+            and entry.get("content_id") not in resolved_ids
+        ):
+            pending.append(entry)
+
+    return jsonify({
+        "count": len(pending),
+        "appeals": pending
+    }), 200
+    
 @app.get("/log")
+    
 def get_log():
     """
     The audit log, most recent last.
