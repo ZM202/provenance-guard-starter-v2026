@@ -43,6 +43,12 @@ with tempfile.TemporaryDirectory() as temp_dir:
         print("\nSTRUCTURED AUDIT LOGS")
         for entry in entries:
             print(json.dumps(entry))
+            
+        with open("capstone_measurements.jsonl", "w", encoding="utf-8") as file:
+            for entry in entries:
+                file.write(json.dumps(entry) + "\n")
+
+        print("Saved 10 audit records to capstone_measurements.jsonl")
 
     finally:
         config.AUDIT_LOG = original_log

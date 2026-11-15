@@ -306,3 +306,60 @@ is evidence, and the entries you paste into your README are what unit 8 grades.
 
 **Do not delete and recreate this repository.** You submit the same URL both
 units.
+## Unit 9 Capstone — Human Appeal Review Workflow
+
+### Extension
+
+This capstone extends Provenance Guard with two endpoints:
+
+- `GET /appeals/pending` — retrieves appeals awaiting human review.
+- `POST /appeals/<content_id>/review` — records a human reviewer's decision to uphold or overturn an appeal.
+
+Review decisions are recorded in the existing append-only audit log, including reviewer identification and appeal resolution time.
+
+### Running the Extension Locally
+
+Activate the Python virtual environment:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Start the Flask application:
+
+```powershell
+python app.py
+```
+
+The application runs locally at `http://127.0.0.1:5000`.
+
+### Performance Measurements
+
+Run:
+
+```powershell
+python measure_runs.py
+```
+
+The script executes 10 test submissions and saves structured audit records to `capstone_measurements.jsonl`.
+
+**Latest measured results:**
+
+- Successful runs: 10/10
+- Average processing time: 0.00052078 seconds
+- Estimated processing time for 100 submissions/day: 0.052078 seconds
+- Illustrative compute rate: $0.10 per compute-hour
+- Estimated measured processing cost: approximately $0.00000145/day
+
+These measurements exclude hosting overhead, storage, and actual model inference.
+
+### Known Limitations
+
+The model score currently uses a placeholder value of `0.5` because the full detector is unavailable in the local environment. The stylometry signal remains operational.
+
+The review workflow is intended for local demonstration and does not currently include reviewer authentication or a production review interface.
+
+### Evidence
+
+The `capstone_measurements.jsonl` file contains 10 structured audit records generated from actual local test submissions.
+
