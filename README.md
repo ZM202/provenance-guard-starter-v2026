@@ -1090,3 +1090,77 @@ To keep the project manageable, I decided the following are out of scope:
 - Automatically deciding appeals without human involvement.
 
 The goal is to create a small, testable extension while preserving the existing text-classification and audit-logging functionality.
+
+## Capstone
+
+**What This Extends**
+
+Provenance Guard is a Flask-based service that analyzes submitted text and records its classification. My capstone extends its appeal workflow by allowing a human reviewer to resolve an appeal instead of leaving it indefinitely under review.
+
+**The Shape**
+
+I selected Shape C — Extend One Capability. The extension adds two endpoints:
+
+- `GET /appeals/pending` retrieves appeals awaiting review.
+- `POST /appeals/<content_id>/review` allows a reviewer to uphold or overturn an appeal.
+
+Review decisions are recorded in the existing append-only JSONL audit log, including the reviewer ID, decision, timestamp, and resolution time.
+
+**Running It**
+
+Activate the virtual environment and start the Flask service:
+
+```powershell
+.venv\Scripts\Activate.ps1
+python app.py
+```
+
+Run the acceptance and concurrency tests:
+
+```powershell
+python capstone_tests.py
+python test_concurrent_reviews.py
+```
+
+See `RUNNING.md` for additional setup and execution instructions.
+
+**Instrumentation**
+
+The service records timestamps, content identifiers, decisions, and processing durations in its audit log. The capstone also measures submission processing time and appeal resolution time.
+
+**What It Costs**
+
+Ten local submission measurements averaged approximately 0.000521 seconds per submission. At 100 submissions per day, that represents approximately 0.0521 seconds of measured processing time daily.
+
+At a hypothetical compute rate of $0.10 per hour, the measured processing time would cost approximately $0.00000145 per day. This estimate excludes server idle time, storage, network costs, and actual model inference.
+
+**Run Log and Verdicts**
+
+Five acceptance criteria were tested three times each.
+
+- Baseline: 15/15 MET.
+- After improvement: 15/15 MET.
+- Concurrent review before correction: MISSED.
+- Concurrent review after correction: MET.
+
+Evidence is saved in `capstone_before_results.json`, `capstone_after_results.json`, `capstone_measurements.jsonl`, and `test_concurrent_reviews.py`.
+
+The capstone includes 10 successful submission measurements in `capstone_measurements.jsonl` and two rejected-request records in `capstone_rejection_evidence.jsonl`. The rejected requests tested empty text and text exceeding 10,000 characters. Both returned HTTP 400 and produced audit records containing a timestamp, creator identifier, rejection reason, status, and processing duration.
+
+The five acceptance criteria passed all 15 trials before and after the concurrency improvement. A separate concurrent-review test initially failed because two reviewers could both record decisions. After correcting the threading-lock placement, the test passed with one HTTP 200 response, one HTTP 409 response, and exactly one resolution record.
+
+**The Improvement**
+
+Additional testing revealed that two reviewers could simultaneously resolve the same appeal, producing two conflicting audit records.
+
+I introduced a threading lock around the review-history check and audit write. After correcting the lock placement, the concurrency test returned one successful review (HTTP 200) and one conflict (HTTP 409), with exactly one resolution record.
+
+**What's Still Broken**
+
+The threading lock only coordinates requests within one Python process. A multi-process deployment would require database-level concurrency control. The review endpoint also lacks reviewer authentication.
+
+The text-detection model uses a temporary fixed model score of 0.5 because the full model dependency was unavailable in the local environment. Consequently, the classification and timing measurements do not represent full model inference.
+
+**How I Used AI**
+
+I used ChatGPT to help explain the existing code, plan the extension, develop test cases, interpret failures, and troubleshoot the concurrency issue. I executed the tests locally, reviewed their results, and made the code changes in VS Code. AI assistance supported the development process, but the reported results came from local execution.
